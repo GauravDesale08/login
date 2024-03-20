@@ -1,0 +1,133 @@
+import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:mlsc/home.dart';
+
+class FormPage extends StatelessWidget {
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _mobileController = TextEditingController();
+  final TextEditingController _addressController = TextEditingController();
+  String _selectedClass = '8th'; // Default value
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('User Registration Form'),
+      ),
+      body: Padding(
+        padding: EdgeInsets.all(20.0),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              TextFormField(
+                controller: _nameController,
+                decoration: InputDecoration(labelText: 'Name'),
+              ),
+              SizedBox(height: 10.0),
+              TextFormField(
+                controller: _emailController,
+                decoration: InputDecoration(labelText: 'Email'),
+                keyboardType: TextInputType.emailAddress,
+              ),
+              SizedBox(height: 10.0),
+              TextFormField(
+                controller: _mobileController,
+                decoration: InputDecoration(labelText: 'Mobile'),
+                keyboardType: TextInputType.phone,
+              ),
+              SizedBox(height: 10.0),
+              TextFormField(
+                controller: _addressController,
+                decoration: InputDecoration(labelText: 'Address'),
+                maxLines: 3,
+              ),
+              SizedBox(height: 10.0),
+              Text('Gender'),
+              Row(
+                children: [
+                  Radio(value: 'Male', groupValue: null, onChanged: null),
+                  Text('Male'),
+                  Radio(value: 'Female', groupValue: null, onChanged: null),
+                  Text('Female'),
+                ],
+              ),
+              SizedBox(height: 10.0),
+              Text('Class'),
+              DropdownButton<String>(
+                value: _selectedClass,
+                onChanged: (String? newValue) {
+                  if (newValue != null) {
+                    // Set the selected class
+                    _selectedClass = newValue;
+                  }
+                },
+                items: <String>['8th', '9th', '10th', '11th', '12th']
+                    .map<DropdownMenuItem<String>>((String value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text(value),
+                  );
+                }).toList(),
+              ),
+              SizedBox(height: 20.0),
+              ElevatedButton(
+                onPressed: () {
+                  // Handle form submission here
+                  _submitForm(context);
+                },
+                child: Text('Submit'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _submitForm(BuildContext context) async {
+    // Extract form data
+    String name = _nameController.text;
+    String email = _emailController.text;
+    String mobile = _mobileController.text;
+    String address = _addressController.text;
+    String gender = ''; // Implement logic to get selected gender
+
+    // Save data to Firestore
+    try {
+      await FirebaseFirestore.instance.collection('users').add({
+        'name': name,
+        'email': email,
+        'mobile': mobile,
+        'address': address,
+        'gender': gender,
+        'class': _selectedClass,
+      });
+
+      // Show success message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Form submitted successfully')),
+      );
+
+      // Clear form fields after submission
+      _nameController.clear();
+      _emailController.clear();
+      _mobileController.clear();
+      _addressController.clear();
+      _selectedClass = '8th'; // Reset to default class
+
+      // Navigate to home page
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => HomeScreen()),
+      );
+    } catch (e) {
+      // Show error message if submission fails
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to submit form')),
+      );
+      print('Error submitting form: $e');
+    }
+  }
+}
