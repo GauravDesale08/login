@@ -24,7 +24,7 @@ class _SignUpPageState extends State<SignUpPage> {
   final TextEditingController _username = TextEditingController();
   final TextEditingController _confirmPassword = TextEditingController();
 
-createUserWithEmailAndPassword() async {
+createUserWithEmailAndPassword(BuildContext context) async {
   try {
     setState(() {
       isLoading = true;
@@ -76,6 +76,7 @@ createUserWithEmailAndPassword() async {
     print(e);
   }
 }
+
 
 
   // Function to save username to Realtime Database
@@ -212,7 +213,14 @@ createUserWithEmailAndPassword() async {
                       ElevatedButton(
                         onPressed: () {
                           if (_formKey.currentState!.validate()) {
-                            createUserWithEmailAndPassword();
+                            createUserWithEmailAndPassword(context);
+                            // Navigate to the form page
+                            Navigator.of(context).pushReplacement(
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    FormPage(), // Navigate to FormPage after successful account creation
+                              ),
+                            );
                           }
                         },
                         style: ElevatedButton.styleFrom(

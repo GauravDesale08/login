@@ -2,12 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:mlsc/home.dart';
 
-class FormPage extends StatelessWidget {
+class FormPage extends StatefulWidget {
+  @override
+  _FormPageState createState() => _FormPageState();
+}
+
+class _FormPageState extends State<FormPage> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _mobileController = TextEditingController();
   final TextEditingController _addressController = TextEditingController();
   String _selectedClass = '8th'; // Default value
+  String? _selectedGender;
 
   @override
   Widget build(BuildContext context) {
@@ -47,9 +53,25 @@ class FormPage extends StatelessWidget {
               Text('Gender'),
               Row(
                 children: [
-                  Radio(value: 'Male', groupValue: null, onChanged: null),
+                  Radio(
+                    value: 'Male',
+                    groupValue: _selectedGender,
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedGender = value.toString();
+                      });
+                    },
+                  ),
                   Text('Male'),
-                  Radio(value: 'Female', groupValue: null, onChanged: null),
+                  Radio(
+                    value: 'Female',
+                    groupValue: _selectedGender,
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedGender = value.toString();
+                      });
+                    },
+                  ),
                   Text('Female'),
                 ],
               ),
@@ -60,7 +82,9 @@ class FormPage extends StatelessWidget {
                 onChanged: (String? newValue) {
                   if (newValue != null) {
                     // Set the selected class
-                    _selectedClass = newValue;
+                    setState(() {
+                      _selectedClass = newValue;
+                    });
                   }
                 },
                 items: <String>['8th', '9th', '10th', '11th', '12th']
@@ -92,7 +116,7 @@ class FormPage extends StatelessWidget {
     String email = _emailController.text;
     String mobile = _mobileController.text;
     String address = _addressController.text;
-    String gender = ''; // Implement logic to get selected gender
+    String gender = _selectedGender ?? ''; // Use selected gender
 
     // Save data to Firestore
     try {
@@ -115,7 +139,10 @@ class FormPage extends StatelessWidget {
       _emailController.clear();
       _mobileController.clear();
       _addressController.clear();
-      _selectedClass = '8th'; // Reset to default class
+      setState(() {
+        _selectedGender = null; // Reset selected gender
+        _selectedClass = '8th'; // Reset to default class
+      });
 
       // Navigate to home page
       Navigator.pushReplacement(
