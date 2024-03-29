@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:mlsc/home.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class FormPage extends StatefulWidget {
   @override
@@ -120,35 +121,41 @@ class _FormPageState extends State<FormPage> {
 
     // Save data to Firestore
     try {
-      await FirebaseFirestore.instance.collection('users').add({
-        'name': name,
-        'email': email,
-        'mobile': mobile,
-        'address': address,
-        'gender': gender,
-        'class': _selectedClass,
-      });
+      User? user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        await FirebaseFirestore.instance.collection('users').add({
+          'name': name,
+          'email': email,
+          'mobile': mobile,
+          'address': address,
+          'gender': gender,
+          'class': _selectedClass,
+          'userId': user.uid,
+        });
 
-      // Show success message
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Form submitted successfully')),
-      );
+        // Show success message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Form submitted successfully')),
+        );
 
-      // Clear form fields after submission
-      _nameController.clear();
-      _emailController.clear();
-      _mobileController.clear();
-      _addressController.clear();
-      setState(() {
-        _selectedGender = null; // Reset selected gender
-        _selectedClass = '8th'; // Reset to default class
-      });
+        // Clear form fields after submission
+        _nameController.clear();
+        _emailController.clear();
+        _mobileController.clear();
+        _addressController.clear();
+        setState(() {
+          _selectedGender = null; // Reset selected gender
+          _selectedClass = '8th'; // Reset to default class
+        });
 
-      // Navigate to home page
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => HomeScreen()),
-      );
+        // Navigate to home page
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => HomeScreen(userId: user.uid)),
+        );
+      } else {
+        throw Exception("User not signed in");
+      }
     } catch (e) {
       // Show error message if submission fails
       ScaffoldMessenger.of(context).showSnackBar(

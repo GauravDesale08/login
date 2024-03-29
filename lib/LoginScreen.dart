@@ -1,12 +1,10 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:mlsc/home.dart';
 import 'package:mlsc/SignUpPage.dart';
 
-import 'home.dart';
-
 class LoginPage extends StatefulWidget {
-  final void Function()? onPressed;
-  const LoginPage({Key? key, this.onPressed}) : super(key: key);
+  const LoginPage({Key? key}) : super(key: key);
 
   @override
   State<LoginPage> createState() => _LoginPageState();
@@ -16,36 +14,27 @@ class _LoginPageState extends State<LoginPage> {
   var _isObscure = true;
   final _formKey = GlobalKey<FormState>();
 
-  bool isLoading = false;
-
   final TextEditingController _email = TextEditingController();
   final TextEditingController _password = TextEditingController();
 
   signInWithEmailAndPassword() async {
     try {
-      setState(() {
-        isLoading = true;
-      });
       UserCredential userCredential =
-      await FirebaseAuth.instance.signInWithEmailAndPassword(
+          await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: _email.text,
         password: _password.text,
       );
-      setState(() {
-        isLoading = false;
-      });
+
       // Navigate to the home screen if login is successful
       if (userCredential.user != null) {
-        Navigator.of(context).pushReplacement(
+        Navigator.pushReplacement(
+          context,
           MaterialPageRoute(
-            builder: (context) => HomeScreen(), // Replace HomeScreen with your actual home screen widget
+            builder: (context) => HomeScreen(userId: userCredential.user!.uid),
           ),
         );
       }
     } on FirebaseAuthException catch (e) {
-      setState(() {
-        isLoading = false;
-      });
       if (e.code == 'user-not-found') {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("No user found for that email.")),
@@ -191,7 +180,7 @@ class _LoginPageState extends State<LoginPage> {
                     children: [
                       Text("Don't have an account?"),
                       TextButton(
-                        onPressed: widget.onPressed ?? () {
+                        onPressed: () {
                           Navigator.of(context).push(
                             MaterialPageRoute(
                               builder: (context) => SignUpPage(),
@@ -212,5 +201,4 @@ class _LoginPageState extends State<LoginPage> {
       ],
     );
   }
-
 }
